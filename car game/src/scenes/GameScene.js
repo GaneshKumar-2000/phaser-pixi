@@ -5,12 +5,12 @@ export default class GameScene extends Phaser.Scene {
 
   create() {
     this.lanewidth = 540 / 3;
+    const centerX = 220;
     // this.lanes = [this.lanewidth / 2, 540 / 2, 540 - this.lanewidth / 2];
-    this.lanes = [165, 250, 335];
-
+    this.lanes = [centerX - 85, centerX, centerX + 85];
     this.currentLane = 1;
 
-    this.road = this.add.tileSprite(250, 480, 500, 960, "road");
+    this.road = this.add.tileSprite(centerX, 480, 500, 960, "road");
     const texture = this.textures.get("road").getSourceImage();
     // const originalWidth = texture.width;
 
@@ -127,7 +127,7 @@ export default class GameScene extends Phaser.Scene {
     this.isGameOver = true;
     this.physics.pause();
     const gameOverText = this.add
-      .text(250, 400, "GAME OVER", {
+      .text(220, 400, "GAME OVER", {
         fontSize: "64px",
         fill: "#ff0000",
         stroke: "#000000",
@@ -139,13 +139,13 @@ export default class GameScene extends Phaser.Scene {
       .setDepth(100);
 
     const restartButton = this.add
-      .rectangle(250, 550, 300, 80, 0x00ff00)
+      .rectangle(220, 550, 300, 80, 0x00ff00)
       .setOrigin(0.5)
       .setInteractive()
       .setDepth(100);
 
     const restartText = this.add
-      .text(250, 550, "RESTART", {
+      .text(220, 550, "RESTART", {
         fontSize: "48px",
         fill: "#000000",
         fontFamily: "Arial",
