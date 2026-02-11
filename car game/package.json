@@ -1,0 +1,22 @@
+{
+  "name": "car-game",
+  "version": "1.0.0",
+  "description": "the user has to avoid hitting the obstracle, use action like jump, roll, left, right to survive.",
+  "main": "index.js",
+  "scripts": {
+    "start": "live-server src",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "Car",
+    "game",
+    "arcade",
+    "driving"
+  ],
+  "author": "ganesh kumar",
+  "license": "ISC",
+  "dependencies": {
+    "live-server": "^1.2.2",
+    "phaser": "^3.90.0"
+  }
+}
