@@ -37,31 +37,77 @@ export default class GameScene extends Phaser.Scene {
 
     this.cursors = this.input.keyboard.createCursorKeys();
 
-    //move left
-    this.input.keyboard.on("keydown-LEFT", () => {
-      if (!this.isGameOver && this.currentLane > 0) {
-        this.currentLane--;
-        this.tweens.add({
-          targets: this.player,
-          x: this.lanes[this.currentLane],
-          duration: 100,
-          ease: "Power1",
-        });
-      }
-    });
+    // //move left
+    // this.input.keyboard.on("keydown-LEFT", () => {
+    //   if (!this.isGameOver && this.currentLane > 0) {
+    //     this.currentLane--;
+    //     this.tweens.add({
+    //       targets: this.player,
+    //       x: this.lanes[this.currentLane],
+    //       duration: 100,
+    //       ease: "Power1",
+    //     });
+    //   }
+    // });
 
-    //move right
-    this.input.keyboard.on("keydown-RIGHT", () => {
-      if (!this.isGameOver && this.currentLane < 2) {
-        this.currentLane++;
-        this.tweens.add({
-          targets: this.player,
-          x: this.lanes[this.currentLane],
-          duration: 100,
-          ease: "Power1",
-        });
-      }
-    });
+    // //move right
+    // this.input.keyboard.on("keydown-RIGHT", () => {
+    //   if (!this.isGameOver && this.currentLane < 2) {
+    //     this.currentLane++;
+    //     this.tweens.add({
+    //       targets: this.player,
+    //       x: this.lanes[this.currentLane],
+    //       duration: 100,
+    //       ease: "Power1",
+    //     });
+    //   }
+    // });
+
+    //Swipe controls
+    this.input.on(
+      "pointerdown",
+      function (pointer) {
+        this.startX = pointer.x;
+        this.startY = pointer.y;
+      },
+      this,
+    );
+
+    this.input.on(
+      "pointerup",
+      function (pointer) {
+        const endX = pointer.x;
+        const endY = pointer.y;
+
+        const diffX = endX - this.startX;
+        const diffY = endY - this.startY;
+
+        const threshold = 50;
+
+        if (Math.abs(diffX) > Math.abs(diffY)) {
+          if (Math.abs(diffX) > threshold) {
+            if (diffX > 0) {
+              this.currentLane++;
+              this.tweens.add({
+                targets: this.player,
+                x: this.lanes[this.currentLane],
+                duration: 100,
+                ease: "Power1",
+              });
+            } else {
+              this.currentLane--;
+              this.tweens.add({
+                targets: this.player,
+                x: this.lanes[this.currentLane],
+                duration: 100,
+                ease: "Power1",
+              });
+            }
+          }
+        }
+      },
+      this,
+    );
 
     //Obstacles
     this.obstacles = this.physics.add.group();
