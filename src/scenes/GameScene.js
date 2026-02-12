@@ -4,6 +4,7 @@ export default class GameScene extends Phaser.Scene {
   }
 
   create() {
+    this.isGameOver = false;
     this.lanewidth = 540 / 3;
     const centerX = 220;
     // this.lanes = [this.lanewidth / 2, 540 / 2, 540 - this.lanewidth / 2];
