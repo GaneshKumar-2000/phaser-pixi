@@ -1,17 +1,17 @@
 import GameScene from "./scenes/GameScene.js";
 import Preloader from "./scenes/PreLoader.js";
 
+const ratio = window.devicePixelRatio;
+
 const config = {
-  width: 500,
+  width: 540,
   height: 960,
   type: Phaser.AUTO,
   parent: "game",
   backgroundColor: "#000000",
   scale: {
     autoCenter: Phaser.Scale.CENTER_BOTH,
-    mode: Phaser.Scale.RESIZE,
-    width: "100%",
-    height: "100%",
+    mode: Phaser.Scale.FIT,
   },
   physics: {
     default: "arcade",
@@ -24,6 +24,17 @@ const config = {
 };
 
 const game = new Phaser.Game(config);
+
+// Global
+game.debugMode = true;
+game.embedded = false;
+
+game.screenBaseSize = {
+  width: window.innerWidth * ratio,
+  height: window.innerHeight * ratio,
+};
+
+game.orientation = "portrait";
 
 // src/
 // ├── assets/                  # Images, Sounds, Fonts

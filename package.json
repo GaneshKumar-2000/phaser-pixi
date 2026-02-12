@@ -1,5 +1,5 @@
 {
-  "name": "car-game",
+  "name": "fruit-game",
   "version": "1.0.0",
   "description": "the user has to avoid hitting the obstracle, use action like jump, roll, left, right to survive.",
   "main": "index.js",
@@ -9,10 +9,10 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
-    "Car",
+    "fruit",
     "game",
     "arcade",
-    "driving"
+    "throwing"
   ],
   "author": "ganesh kumar",
   "license": "ISC",

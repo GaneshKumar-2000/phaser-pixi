@@ -1,216 +1,283 @@
+import { dimensions } from "../utils/Constants.js";
 export default class GameScene extends Phaser.Scene {
   constructor() {
     super("game-scene");
   }
 
   create() {
-    this.isGameOver = false;
-    this.lanewidth = 540 / 3;
-    const centerX = 220;
-    // this.lanes = [this.lanewidth / 2, 540 / 2, 540 - this.lanewidth / 2];
-    this.lanes = [centerX - 85, centerX, centerX + 85];
-    this.currentLane = 1;
+    this.score = 0;
+    this.lives = 3;
+    this.timeLeft = 30;
+    this.gameOver = false;
 
-    this.road = this.add.tileSprite(centerX, 480, 500, 960, "road");
-    const texture = this.textures.get("road").getSourceImage();
-    // const originalWidth = texture.width;
+    this.superGroup = this.add.container();
+    this.gameGroup = this.add.container();
+    this.superGroup.add(this.gameGroup);
 
-    // const scaleNeeded = 500 / originalWidth;
-    const scaleX = 500 / texture.width;
-    const scaleY = 960 / texture.height;
+    this.bg = this.add.sprite(0, 0, "bg");
+    this.bg.setOrigin(0.5);
+    this.gameGroup.add(this.bg);
 
-    this.road.setTileScale(scaleX, scaleY);
+    this.bgFlare = this.add.sprite(0, 0, "bg_flare");
+    this.bgFlare.setOrigin(0.5);
+    this.gameGroup.add(this.bgFlare);
 
-    this.player = this.physics.add.sprite(
-      this.lanes[this.currentLane],
-      800,
-      "car",
-    );
-    this.player.setScale(0.5);
+    this.fruitGroup = this.physics.add.group();
 
-    this.player.body.setSize(this.player.width * 0.4, this.player.height * 0.5);
-    this.player.body.setOffset(
-      this.player.width * 0.3,
-      this.player.height * 0.2,
-    );
-
-    this.physics.add.existing(this.player);
-
-    this.cursors = this.input.keyboard.createCursorKeys();
-
-    // //move left
-    // this.input.keyboard.on("keydown-LEFT", () => {
-    //   if (!this.isGameOver && this.currentLane > 0) {
-    //     this.currentLane--;
-    //     this.tweens.add({
-    //       targets: this.player,
-    //       x: this.lanes[this.currentLane],
-    //       duration: 100,
-    //       ease: "Power1",
-    //     });
-    //   }
-    // });
-
-    // //move right
-    // this.input.keyboard.on("keydown-RIGHT", () => {
-    //   if (!this.isGameOver && this.currentLane < 2) {
-    //     this.currentLane++;
-    //     this.tweens.add({
-    //       targets: this.player,
-    //       x: this.lanes[this.currentLane],
-    //       duration: 100,
-    //       ease: "Power1",
-    //     });
-    //   }
-    // });
-
-    //Swipe controls
-    this.input.on(
-      "pointerdown",
-      function (pointer) {
-        this.startX = pointer.x;
-        this.startY = pointer.y;
-      },
-      this,
-    );
-
-    this.input.on(
-      "pointerup",
-      function (pointer) {
-        const endX = pointer.x;
-        const endY = pointer.y;
-
-        const diffX = endX - this.startX;
-        const diffY = endY - this.startY;
-
-        const threshold = 50;
-
-        if (Math.abs(diffX) > Math.abs(diffY)) {
-          if (Math.abs(diffX) > threshold) {
-            if (diffX > 0) {
-              this.currentLane++;
-              this.tweens.add({
-                targets: this.player,
-                x: this.lanes[this.currentLane],
-                duration: 100,
-                ease: "Power1",
-              });
-            } else {
-              this.currentLane--;
-              this.tweens.add({
-                targets: this.player,
-                x: this.lanes[this.currentLane],
-                duration: 100,
-                ease: "Power1",
-              });
-            }
-          }
-        }
-      },
-      this,
-    );
-
-    //Obstacles
-    this.obstacles = this.physics.add.group();
-
-    this.time.addEvent({
+    this.spawnTimer = this.time.addEvent({
       delay: 1500,
-      callback: this.spawnObstacle,
+      callback: this.spawnFruit,
       callbackScope: this,
       loop: true,
     });
 
-    this.physics.add.collider(
-      this.player,
-      this.obstacles,
-      this.handleCollision,
-      null,
-      this,
-    );
+    this.createHUD();
 
-    this.score = 0;
-    this.scoreText = this.add.text(20, 20, "Score: 0", {
-      fontSize: "32px",
-      fill: "#ffffff",
-      fontFamily: "Arial",
-      fontWeight: "bold",
+    this.setPositions();
+
+    this.gameResized();
+  }
+
+  spawnFruit() {
+    const fruits = ["apple", "spinach", "orange", "coconut", "bread", "bomb"];
+
+    const texture = Phaser.Utils.Array.GetRandom(fruits);
+
+    const startX = Phaser.Math.Between(50, dimensions.gameWidth - 50);
+    const startY = dimensions.gameHeight + 50;
+
+    const fruit = this.fruitGroup.create(startX, startY, texture);
+
+    fruit.setInteractive();
+
+    fruit.on("pointerdown", () => {
+      this.hitObject(fruit, texture);
     });
+
+    const velocityY = Phaser.Math.Between(-600, -1000);
+    const velocityX = Phaser.Math.Between(-200, 200);
+    fruit.setVelocity(velocityX, velocityY);
+
+    fruit.setGravityY(1000);
+
+    this.gameGroup.add(fruit);
   }
 
-  update() {
-    this.obstacles.children.iterate((obstacle) => {
-      if (!obstacle || this.isGameOver) return;
+  hitObject(fruit, texture) {
+    if (this.gameOver) return;
+    fruit.disableInteractive();
 
-      if (!obstacle.scored && obstacle.y > this.player.y) {
-        this.score += 10;
-        this.scoreText.setText(`Score: ${this.score}`);
-        obstacle.scored = true;
+    if (texture == "bomb") {
+      this.lives--;
+      this.livesText.setText(`Lives ${this.lives}`);
+      fruit.destroy();
+
+      if (this.lives <= 0) {
+        this.handleGameOver(false);
       }
+    } else {
+      fruit.destroy();
+      this.score++;
+      this.scoreText.setText(`Score ${this.score}`);
+    }
+  }
 
-      obstacle.setScale(0.45);
+  handleGameOver(victory) {
+    this.gameOver = true;
+    this.timeEvent.remove();
+    this.spawnTimer.remove();
 
-      if (obstacle.y > 1000) {
-        obstacle.destroy();
+    this.fruitGroup.children.iterate((child) => {
+      if (child) {
+        child.setVelocity(0, 0);
+        child.body.allowGravity = false;
+        child.disableInteractive();
       }
     });
-  }
 
-  spawnObstacle() {
-    const lane = Phaser.Math.Between(0, 2);
-    const obstacle = this.physics.add.sprite(
-      this.lanes[lane],
-      -100,
-      "obstacle",
-    );
+    const resultText = victory ? "You WON!" : "Game Over";
 
-    obstacle.setScale(0.45);
-    obstacle.body.setSize(obstacle.width * 0.4, obstacle.height * 0.4);
-
-    this.obstacles.add(obstacle);
-    obstacle.body.setVelocityY(400);
-  }
-
-  handleCollision(player, obstacle) {
-    this.isGameOver = true;
-    this.physics.pause();
-    const gameOverText = this.add
-      .text(220, 400, "GAME OVER", {
-        fontSize: "64px",
-        fill: "#ff0000",
-        stroke: "#000000",
+    const endText = this.add.text(
+      dimensions.gameWidth / 2,
+      dimensions.gameHeight / 2 - 50,
+      resultText,
+      {
+        font: "64px Arial",
+        fill: "#fff",
+        stroke: "#000",
         strokeThickness: 6,
-        fontFamily: "Arial",
-        fontWeight: "bold",
-      })
-      .setOrigin(0.5)
-      .setDepth(100);
+      },
+    );
 
-    const restartButton = this.add
-      .rectangle(220, 550, 300, 80, 0x00ff00)
-      .setOrigin(0.5)
-      .setInteractive()
-      .setDepth(100);
+    endText.setOrigin(0.5);
 
-    const restartText = this.add
-      .text(220, 550, "RESTART", {
-        fontSize: "48px",
-        fill: "#000000",
-        fontFamily: "Arial",
-        fontWeight: "bold",
-      })
-      .setOrigin(0.5)
-      .setDepth(101);
+    const replayButton = this.add.sprite(
+      dimensions.gameWidth / 2,
+      dimensions.gameHeight / 2 - 50,
+      "replay",
+    );
 
-    restartButton.on("pointerdown", () => {
+    replayButton.setInteractive();
+
+    replayButton.on("pointerdown", () => {
       this.scene.restart();
     });
 
-    restartButton.on("pointerover", () => {
-      restartButton.setFillStyle(0x00cc00);
-    });
+    this.gameGroup.add(replayButton);
+  }
 
-    restartButton.on("pointerout", () => {
-      restartButton.setFillStyle(0x00ff00);
+  gameOver() {
+    this.scene.restart();
+  }
+
+  createHUD() {
+    const style = { font: "32px Arial", fill: "#fff" };
+
+    this.scoreText = this.add.text(20, 20, `Score ${(this.score, style)}`);
+
+    this.livesText = this.add.text(
+      dimensions.gameWidth - 20,
+      20,
+      `Lives ${(this.lives, style)}`,
+    );
+    this.livesText.setOrigin(1, 0);
+
+    this.timeText = this.add.text(
+      dimensions.gameWidth / 2,
+      20,
+      `Time ${(this.timeLeft, style)}`,
+    );
+    this.timeText.setOrigin(0.5, 0);
+
+    this.gameGroup.add(this.scoreText);
+    this.gameGroup.add(this.livesText);
+    this.gameGroup.add(this.timeText);
+
+    this.timeEvent = this.time.addEvent({
+      delay: 1000,
+      callback: this.updateTimer,
+      callbackScope: this,
+      loop: true,
+    });
+  }
+
+  updateTimer() {
+    if (this.gameOver) return;
+
+    this.timeLeft--;
+    this.timeText.setText(`Time ${this.timeLeft}`);
+
+    if (this.timeLeft <= 0) {
+      this.handleGameOver(true);
+    }
+  }
+
+  gameResized() {
+    let ratio = 1;
+
+    if (
+      window.screen.systemXDPI !== undefined &&
+      window.screen.logicalXDPI !== undefined &&
+      window.screen.systemXDPI > window.screen.logicalXDPI
+    )
+      ratio = window.screen.systemXDPI / window.screen.logicalXDPI;
+    else if (window.devicePixelRatio !== undefined)
+      ratio = window.devicePixelRatio;
+
+    try {
+      let size = dapi.getScreenSize();
+
+      dimensions.fullWidth = size.width;
+      dimensions.fullHeight = size.height;
+    } catch (e) {
+      dimensions.fullWidth = Math.ceil(window.innerWidth * ratio);
+      dimensions.fullHeight = Math.ceil(window.innerHeight * ratio);
+    }
+
+    dimensions.actualWidth = dimensions.fullWidth;
+    dimensions.actualHeight = dimensions.fullHeight;
+
+    dimensions.ratio = ratio;
+
+    if (
+      this.game.canvas.width === dimensions.fullWidth &&
+      this.game.canvas.height === dimensions.fullHeight
+    ) {
+      return;
+    }
+
+    if (dimensions.isPortrait != dimensions.fullWidth < dimensions.fullHeight) {
+      this.switchMode(!dimensions.isPortrait);
+    } else {
+      this.switchMode(dimensions.isPortrait);
+    }
+
+    this.game.scale.setGameSize(dimensions.fullWidth, dimensions.fullHeight);
+
+    this.game.canvas.style.width = dimensions.fullWidth + "px";
+    this.game.canvas.style.height = dimensions.fullHeight + "px";
+    this.game.scale.updateBounds();
+    this.game.scale.refresh();
+
+    this.setGameScale();
+    this.setPositions();
+  }
+
+  switchMode(isPortrait) {
+    const portrait = {
+      gameWidth: 540,
+      gameHeight: 960,
+    };
+    const landscape = {
+      gameWidth: 960,
+      gameHeight: 540,
+    };
+    dimensions.isPortrait = isPortrait;
+    dimensions.isLandscape = !isPortrait;
+
+    let mode = portrait;
+
+    if (dimensions.isLandscape) mode = landscape;
+
+    dimensions.gameWidth = mode.gameWidth;
+    dimensions.gameHeight = mode.gameHeight;
+  }
+
+  setGameScale() {
+    let scaleX = dimensions.actualWidth / dimensions.gameWidth;
+    let scaleY = dimensions.actualHeight / dimensions.gameHeight;
+    this.gameScale = Math.min(scaleX, scaleY);
+  }
+
+  setPositions() {
+    this.superGroup.scale = this.gameScale;
+    this.gameGroup.x =
+      (this.game.canvas.width / this.gameScale - dimensions.gameWidth) / 2;
+    this.gameGroup.y =
+      (this.game.canvas.height / this.gameScale - dimensions.gameHeight) / 2;
+
+    this.bg.setScale(1);
+
+    let scaleX = dimensions.actualWidth / this.bg.displayWidth;
+    let scaleY = dimensions.actualHeight / this.bg.displayHeight;
+
+    let scale = Math.max(scaleX, scaleY);
+
+    this.bg.setScale(scale);
+
+    this.bg.x = dimensions.gameWidth / 2;
+    this.bg.y = dimensions.gameHeight / 2;
+
+    this.bgFlare.x = dimensions.gameWidth / 2;
+    this.bgFlare.y = dimensions.gameHeight / 2;
+  }
+
+  update() {
+    this.fruitGroup.children.iterate((fruit) => {
+      if (fruit && fruit.y > dimensions.gameHeight + 100) {
+        this.fruitGroup.killAndHide(fruit);
+        this.fruitGroup.remove(fruit);
+      }
     });
   }
 }
