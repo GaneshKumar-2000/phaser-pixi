@@ -82,7 +82,7 @@ export default class GameScene extends Phaser.Scene {
     } else {
       fruit.destroy();
       this.score++;
-      this.scoreText.setText(`Score ${this.score}`);
+      this.scoreText.setText(`Score: ${this.score}`);
     }
   }
 
@@ -131,6 +131,23 @@ export default class GameScene extends Phaser.Scene {
     resultText.setOrigin(0.5);
     resultsContainer.add(resultText);
 
+    const style = {
+      font: "32px Arial",
+      fill: "#fff",
+      stroke: "#000",
+      strokeThickness: 3,
+    };
+
+    this.scoreText = this.add.text(
+      dimensions.gameWidth / 2,
+      dimensions.gameHeight / 2 - 50,
+      `${this.score > 0 ? "Score: " + this.score : "At what cost 😂. Try to get a score."}`,
+      style,
+    );
+
+    this.scoreText.setOrigin(0.5);
+    resultsContainer.add(this.scoreText);
+
     const replayButton = this.add.sprite(
       dimensions.gameWidth / 2,
       dimensions.gameHeight / 2 + 50,
@@ -152,6 +169,7 @@ export default class GameScene extends Phaser.Scene {
     } else {
       resultsContainer.add(replayButton);
       mainMenuButton.destroy();
+      this.scoreText.destroy();
     }
 
     replayButton.on("pointerup", () => {
@@ -204,13 +222,6 @@ export default class GameScene extends Phaser.Scene {
       stroke: "#000000",
       strokeThickness: 6,
       fontStyle: "bold",
-    };
-
-    const livestextStyle = {
-      font: "32px Arial",
-      fill: "#fff",
-      stroke: "#000",
-      strokeThickness: 3,
     };
 
     //Score
