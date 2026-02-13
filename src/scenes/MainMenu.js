@@ -1,0 +1,138 @@
+import { dimensions } from "../utils/Constants.js";
+
+export default class MainMenu extends Phaser.Scene {
+  constructor() {
+    super("main-menu");
+  }
+
+  create() {
+    this.superGroup = this.add.container();
+    this.gameGroup = this.add.container();
+    this.superGroup.add(this.gameGroup);
+
+    this.bg = this.add.image(0, 0, "intro_bg");
+    this.bg.setOrigin(0.5);
+    this.gameGroup.add(this.bg);
+
+    this.title = this.add.image(0, -200, "title");
+    this.title.setOrigin(0.5);
+    this.title.setDisplaySize(600, 600);
+    this.gameGroup.add(this.title);
+
+    this.playbtn = this.add.image(dimensions.gameWidth / 2, 200, "play");
+    this.playbtn.setOrigin(0.5);
+    this.playbtn.setDisplaySize(200, 200);
+    this.gameGroup.add(this.playbtn);
+
+    this.playbtn.setInteractive();
+
+    this.playbtn.on("pointerup", () => {
+      this.scene.start("game-scene");
+    });
+
+    this.gameResized();
+  }
+
+  gameResized() {
+    let ratio = 1;
+
+    if (
+      window.screen.systemXDPI !== undefined &&
+      window.screen.logicalXDPI !== undefined &&
+      window.screen.systemXDPI > window.screen.logicalXDPI
+    )
+      ratio = window.screen.systemXDPI / window.screen.logicalXDPI;
+    else if (window.devicePixelRatio !== undefined)
+      ratio = window.devicePixelRatio;
+
+    try {
+      let size = dapi.getScreenSize();
+
+      dimensions.fullWidth = size.width;
+      dimensions.fullHeight = size.height;
+    } catch (e) {
+      dimensions.fullWidth = Math.ceil(window.innerWidth * ratio);
+      dimensions.fullHeight = Math.ceil(window.innerHeight * ratio);
+    }
+
+    dimensions.actualWidth = dimensions.fullWidth;
+    dimensions.actualHeight = dimensions.fullHeight;
+
+    dimensions.ratio = ratio;
+
+    if (
+      this.game.canvas.width === dimensions.fullWidth &&
+      this.game.canvas.height === dimensions.fullHeight
+    ) {
+      return;
+    }
+
+    if (dimensions.isPortrait != dimensions.fullWidth < dimensions.fullHeight) {
+      this.switchMode(!dimensions.isPortrait);
+    } else {
+      this.switchMode(dimensions.isPortrait);
+    }
+
+    this.game.scale.setGameSize(dimensions.fullWidth, dimensions.fullHeight);
+
+    this.game.canvas.style.width = dimensions.fullWidth + "px";
+    this.game.canvas.style.height = dimensions.fullHeight + "px";
+    this.game.scale.updateBounds();
+    this.game.scale.refresh();
+
+    this.setGameScale();
+    this.setPositions();
+  }
+
+  switchMode(isPortrait) {
+    const portrait = {
+      gameWidth: 540,
+      gameHeight: 960,
+    };
+    const landscape = {
+      gameWidth: 960,
+      gameHeight: 540,
+    };
+    dimensions.isPortrait = isPortrait;
+    dimensions.isLandscape = !isPortrait;
+
+    let mode = portrait;
+
+    if (dimensions.isLandscape) mode = landscape;
+
+    dimensions.gameWidth = mode.gameWidth;
+    dimensions.gameHeight = mode.gameHeight;
+  }
+
+  setGameScale() {
+    let scaleX = dimensions.actualWidth / dimensions.gameWidth;
+    let scaleY = dimensions.actualHeight / dimensions.gameHeight;
+    this.gameScale = Math.min(scaleX, scaleY);
+  }
+
+  setPositions() {
+    this.superGroup.scale = this.gameScale;
+    this.gameGroup.x =
+      (this.game.canvas.width / this.gameScale - dimensions.gameWidth) / 2;
+    this.gameGroup.y =
+      (this.game.canvas.height / this.gameScale - dimensions.gameHeight) / 2;
+
+    this.bg.x = dimensions.gameWidth / 2;
+    this.bg.y = dimensions.gameHeight / 2;
+
+    this.bg.setScale(1);
+
+    let scaleX = dimensions.actualWidth / this.bg.displayWidth;
+    let scaleY = dimensions.actualHeight / this.bg.displayHeight;
+
+    let scale = Math.max(scaleX, scaleY);
+
+    this.bg.setScale(scale);
+
+    this.title.x = dimensions.gameWidth / 2;
+    this.title.y = dimensions.gameHeight / 2 - 150;
+
+    this.playbtn.x = dimensions.gameWidth / 2;
+    this.playbtn.y = dimensions.gameHeight / 2 + 150;
+  }
+}

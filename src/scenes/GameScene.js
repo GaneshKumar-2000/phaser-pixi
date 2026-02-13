@@ -25,21 +25,18 @@ export default class GameScene extends Phaser.Scene {
     this.fruitGroup = this.physics.add.group();
 
     this.spawnTimer = this.time.addEvent({
-      delay: 1500,
+      delay: 800,
       callback: this.spawnFruit,
       callbackScope: this,
       loop: true,
     });
 
-    this.createHUD();
-
-    this.setPositions();
-
     this.gameResized();
+    this.createHUD();
   }
 
   spawnFruit() {
-    const fruits = ["apple", "spinach", "orange", "coconut", "bread", "bomb"];
+    const fruits = ["apple", "spinach", "orange", "bomb"];
 
     const texture = Phaser.Utils.Array.GetRandom(fruits);
 
@@ -69,7 +66,12 @@ export default class GameScene extends Phaser.Scene {
 
     if (texture == "bomb") {
       this.lives--;
-      this.livesText.setText(`Lives ${this.lives}`);
+      const hearts = this.lifegroup.getChildren();
+      const heartToRemove = hearts[this.lives];
+
+      if (heartToRemove) {
+        heartToRemove.destroy();
+      }
       fruit.destroy();
 
       if (this.lives <= 0) {
@@ -106,6 +108,7 @@ export default class GameScene extends Phaser.Scene {
         fill: "#fff",
         stroke: "#000",
         strokeThickness: 6,
+        align: "center",
       },
     );
 
@@ -131,26 +134,55 @@ export default class GameScene extends Phaser.Scene {
   }
 
   createHUD() {
-    const style = { font: "32px Arial", fill: "#fff" };
+    const style = {
+      font: "32px Arial",
+      fill: "#fff",
+      stroke: "#000",
+      strokeThickness: 3,
+    };
 
-    this.scoreText = this.add.text(20, 20, `Score ${(this.score, style)}`);
+    const timerStyle = {
+      font: "80px Arial",
+      fill: "#ffcc00",
+      stroke: "#000000",
+      strokeThickness: 6,
+      fontStyle: "bold",
+    };
 
-    this.livesText = this.add.text(
-      dimensions.gameWidth - 20,
-      20,
-      `Lives ${(this.lives, style)}`,
-    );
-    this.livesText.setOrigin(1, 0);
+    const livestextStyle = {
+      font: "32px Arial",
+      fill: "#fff",
+      stroke: "#000",
+      strokeThickness: 3,
+    };
 
+    //Score
+    this.scoreText = this.add.text(20, 20, "Score: " + this.score, style);
+
+    //Lives
+    this.lifegroup = this.add.group();
+    for (let i = 0; i < this.lives; i++) {
+      const heart = this.add.image(
+        dimensions.gameWidth - 50 - i * 40,
+        40,
+        "life",
+      );
+      heart.setDisplaySize(30, 30);
+      this.lifegroup.add(heart);
+      this.gameGroup.add(heart);
+    }
+
+    //Timer
     this.timeText = this.add.text(
       dimensions.gameWidth / 2,
-      20,
-      `Time ${(this.timeLeft, style)}`,
+      0,
+      this.timeLeft,
+      timerStyle,
     );
     this.timeText.setOrigin(0.5, 0);
 
     this.gameGroup.add(this.scoreText);
-    this.gameGroup.add(this.livesText);
+    // this.gameGroup.add(this.lifegroup);
     this.gameGroup.add(this.timeText);
 
     this.timeEvent = this.time.addEvent({
@@ -165,7 +197,7 @@ export default class GameScene extends Phaser.Scene {
     if (this.gameOver) return;
 
     this.timeLeft--;
-    this.timeText.setText(`Time ${this.timeLeft}`);
+    this.timeText.setText(this.timeLeft);
 
     if (this.timeLeft <= 0) {
       this.handleGameOver(true);
@@ -200,24 +232,25 @@ export default class GameScene extends Phaser.Scene {
     dimensions.ratio = ratio;
 
     if (
-      this.game.canvas.width === dimensions.fullWidth &&
-      this.game.canvas.height === dimensions.fullHeight
+      this.game.canvas.width !== dimensions.fullWidth ||
+      this.game.canvas.height !== dimensions.fullHeight
     ) {
-      return;
+      if (
+        dimensions.isPortrait !=
+        dimensions.fullWidth < dimensions.fullHeight
+      ) {
+        this.switchMode(!dimensions.isPortrait);
+      } else {
+        this.switchMode(dimensions.isPortrait);
+      }
+
+      this.game.scale.setGameSize(dimensions.fullWidth, dimensions.fullHeight);
+
+      this.game.canvas.style.width = dimensions.fullWidth + "px";
+      this.game.canvas.style.height = dimensions.fullHeight + "px";
+      this.game.scale.updateBounds();
+      this.game.scale.refresh();
     }
-
-    if (dimensions.isPortrait != dimensions.fullWidth < dimensions.fullHeight) {
-      this.switchMode(!dimensions.isPortrait);
-    } else {
-      this.switchMode(dimensions.isPortrait);
-    }
-
-    this.game.scale.setGameSize(dimensions.fullWidth, dimensions.fullHeight);
-
-    this.game.canvas.style.width = dimensions.fullWidth + "px";
-    this.game.canvas.style.height = dimensions.fullHeight + "px";
-    this.game.scale.updateBounds();
-    this.game.scale.refresh();
 
     this.setGameScale();
     this.setPositions();

@@ -1,5 +1,6 @@
 import GameScene from "./scenes/GameScene.js";
 import Preloader from "./scenes/PreLoader.js";
+import MainMenu from "./scenes/MainMenu.js";
 
 const ratio = window.devicePixelRatio;
 
@@ -20,7 +21,7 @@ const config = {
       debug: false,
     },
   },
-  scene: [Preloader, GameScene],
+  scene: [Preloader, MainMenu, GameScene],
 };
 
 const game = new Phaser.Game(config);
