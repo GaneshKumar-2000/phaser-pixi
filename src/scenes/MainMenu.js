@@ -65,6 +65,13 @@ export default class MainMenu extends Phaser.Scene {
       repeat: 0,
       ease: "easeOut",
     });
+
+    if (!this.sound.get("bg_music")) {
+      this.bg_music = this.sound.add("bg_music", { loop: true, volume: 0.5 });
+      this.bg_music.play();
+    } else if (!this.sound.get("bg_music").isPlaying) {
+      this.sound.get("bg_music").play();
+    }
   }
 
   gameResized() {

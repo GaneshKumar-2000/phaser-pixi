@@ -79,11 +79,15 @@ export default class GameScene extends Phaser.Scene {
       if (this.lives <= 0) {
         this.handleGameOver(false);
       }
+
+      this.sound.play("bomb");
     } else {
       fruit.destroy();
       this.score++;
       this.scoreText.setText(`Score: ${this.score}`);
     }
+
+    this.sound.play("slice");
   }
 
   handleGameOver(victory) {

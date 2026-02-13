@@ -19,6 +19,9 @@ export default class Preloader extends Phaser.Scene {
     this.load.image("play", "assets/play.png");
     this.load.image("title", "assets/title.png");
     this.load.image("main_menu", "assets/main_menu.png");
+    this.load.audio("bg_music", "assets/sound/bg_music.mp3");
+    this.load.audio("slice", "assets/sound/slice.mp3");
+    this.load.audio("bomb", "assets/sound/bomb.mp3");
 
     this.width = this.sys.game.config.width;
     this.height = this.sys.game.config.height;
