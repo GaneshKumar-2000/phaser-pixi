@@ -5,6 +5,8 @@ export default class GameScene extends Phaser.Scene {
   }
 
   create() {
+    this.cameras.main.fadeIn(500, 0, 0, 0);
+
     this.score = 0;
     this.lives = 3;
     this.timeLeft = 30;
@@ -97,12 +99,26 @@ export default class GameScene extends Phaser.Scene {
       }
     });
 
-    const resultText = victory ? "You WON!" : "Game Over";
+    const resultsContainer = this.add.container();
+    this.gameGroup.add(resultsContainer);
 
-    const endText = this.add.text(
+    const overlay = this.add.rectangle(
       dimensions.gameWidth / 2,
-      dimensions.gameHeight / 2 - 50,
-      resultText,
+      dimensions.gameHeight / 2,
+      dimensions.gameWidth,
+      dimensions.gameHeight,
+      0x000000,
+      0.7,
+    );
+
+    resultsContainer.add(overlay);
+
+    const Text = victory ? "You WON!" : "Game Over";
+
+    const resultText = this.add.text(
+      dimensions.gameWidth / 2,
+      dimensions.gameHeight / 2 - 100,
+      Text,
       {
         font: "64px Arial",
         fill: "#fff",
@@ -112,21 +128,62 @@ export default class GameScene extends Phaser.Scene {
       },
     );
 
-    endText.setOrigin(0.5);
+    resultText.setOrigin(0.5);
+    resultsContainer.add(resultText);
 
     const replayButton = this.add.sprite(
       dimensions.gameWidth / 2,
-      dimensions.gameHeight / 2 - 50,
+      dimensions.gameHeight / 2 + 50,
       "replay",
     );
 
-    replayButton.setInteractive();
+    const mainMenuButton = this.add.sprite(
+      dimensions.gameWidth / 2,
+      dimensions.gameHeight / 2 + 50,
+      "main_menu",
+    );
 
-    replayButton.on("pointerdown", () => {
-      this.scene.restart();
+    replayButton.setInteractive();
+    mainMenuButton.setInteractive();
+
+    if (victory) {
+      resultsContainer.add(mainMenuButton);
+      replayButton.destroy();
+    } else {
+      resultsContainer.add(replayButton);
+      mainMenuButton.destroy();
+    }
+
+    replayButton.on("pointerup", () => {
+      this.cameras.main.fadeOut(500, 0, 0, 0);
+
+      this.cameras.main.once(
+        Phaser.Cameras.Scene2D.Events.FADE_OUT_COMPLETE,
+        () => {
+          this.scene.restart();
+        },
+      );
     });
 
-    this.gameGroup.add(replayButton);
+    mainMenuButton.on("pointerup", () => {
+      this.cameras.main.fadeOut(500, 0, 0, 0);
+
+      this.cameras.main.once(
+        Phaser.Cameras.Scene2D.Events.FADE_OUT_COMPLETE,
+        () => {
+          this.scene.start("main-menu");
+        },
+      );
+    });
+
+    resultsContainer.setScale(0);
+
+    this.tweens.add({
+      targets: resultsContainer,
+      scale: 1,
+      duration: 500,
+      ease: "Back.easeOut",
+    });
   }
 
   gameOver() {

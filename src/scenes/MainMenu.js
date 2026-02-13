@@ -27,10 +27,44 @@ export default class MainMenu extends Phaser.Scene {
     this.playbtn.setInteractive();
 
     this.playbtn.on("pointerup", () => {
-      this.scene.start("game-scene");
+      this.cameras.main.fadeOut(500, 0, 0, 0);
     });
 
+    this.cameras.main.once(
+      Phaser.Cameras.Scene2D.Events.FADE_OUT_COMPLETE,
+      () => {
+        this.scene.start("game-scene");
+      },
+    );
+
     this.gameResized();
+
+    const titleTargetY = this.title.y;
+    const playbtnTargetY = this.playbtn.y;
+
+    this.title.y += 200;
+    this.playbtn.y += 200;
+
+    this.title.alpha = 0;
+    this.playbtn.alpha = 0;
+
+    this.tweens.add({
+      targets: this.title,
+      y: titleTargetY,
+      alpha: 1,
+      duration: 2000,
+      repeat: 0,
+      ease: "easeOut",
+    });
+
+    this.tweens.add({
+      targets: this.playbtn,
+      y: playbtnTargetY,
+      alpha: 1,
+      duration: 2000,
+      repeat: 0,
+      ease: "easeOut",
+    });
   }
 
   gameResized() {
@@ -61,24 +95,25 @@ export default class MainMenu extends Phaser.Scene {
     dimensions.ratio = ratio;
 
     if (
-      this.game.canvas.width === dimensions.fullWidth &&
-      this.game.canvas.height === dimensions.fullHeight
+      this.game.canvas.width !== dimensions.fullWidth ||
+      this.game.canvas.height !== dimensions.fullHeight
     ) {
-      return;
+      if (
+        dimensions.isPortrait !=
+        dimensions.fullWidth < dimensions.fullHeight
+      ) {
+        this.switchMode(!dimensions.isPortrait);
+      } else {
+        this.switchMode(dimensions.isPortrait);
+      }
+
+      this.game.scale.setGameSize(dimensions.fullWidth, dimensions.fullHeight);
+
+      this.game.canvas.style.width = dimensions.fullWidth + "px";
+      this.game.canvas.style.height = dimensions.fullHeight + "px";
+      this.game.scale.updateBounds();
+      this.game.scale.refresh();
     }
-
-    if (dimensions.isPortrait != dimensions.fullWidth < dimensions.fullHeight) {
-      this.switchMode(!dimensions.isPortrait);
-    } else {
-      this.switchMode(dimensions.isPortrait);
-    }
-
-    this.game.scale.setGameSize(dimensions.fullWidth, dimensions.fullHeight);
-
-    this.game.canvas.style.width = dimensions.fullWidth + "px";
-    this.game.canvas.style.height = dimensions.fullHeight + "px";
-    this.game.scale.updateBounds();
-    this.game.scale.refresh();
 
     this.setGameScale();
     this.setPositions();

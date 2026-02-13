@@ -18,6 +18,7 @@ export default class Preloader extends Phaser.Scene {
     this.load.image("intro_bg", "assets/intro_bg.png");
     this.load.image("play", "assets/play.png");
     this.load.image("title", "assets/title.png");
+    this.load.image("main_menu", "assets/main_menu.png");
 
     this.width = this.sys.game.config.width;
     this.height = this.sys.game.config.height;
