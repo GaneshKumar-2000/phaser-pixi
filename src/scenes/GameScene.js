@@ -35,6 +35,10 @@ export default class GameScene extends Phaser.Scene {
 
     this.gameResized();
     this.createHUD();
+
+    this.Points = [];
+    this.slash = this.add.graphics();
+    this.slash.setDepth(100);
   }
 
   spawnFruit() {
@@ -49,11 +53,13 @@ export default class GameScene extends Phaser.Scene {
 
     fruit.setInteractive();
 
-    fruit.on("pointerdown", () => {
-      this.hitObject(fruit, texture);
+    fruit.on("pointerover", () => {
+      if (this.input.activePointer.isDown) {
+        this.hitObject(fruit, texture);
+      }
     });
 
-    const velocityY = Phaser.Math.Between(-600, -1000);
+    const velocityY = Phaser.Math.Between(-800, -1300);
     const velocityX = Phaser.Math.Between(-200, 200);
     fruit.setVelocity(velocityX, velocityY);
 
@@ -74,7 +80,9 @@ export default class GameScene extends Phaser.Scene {
       if (heartToRemove) {
         heartToRemove.destroy();
       }
-      fruit.destroy();
+
+      fruit.setVisible(false);
+      this.time.delayedCall(1, () => fruit.destroy());
 
       if (this.lives <= 0) {
         this.handleGameOver(false);
@@ -82,7 +90,8 @@ export default class GameScene extends Phaser.Scene {
 
       this.sound.play("bomb");
     } else {
-      fruit.destroy();
+      fruit.setVisible(false);
+      this.time.delayedCall(1, () => fruit.destroy());
       this.score++;
       this.scoreText.setText(`Score: ${this.score}`);
     }
@@ -384,5 +393,29 @@ export default class GameScene extends Phaser.Scene {
         this.fruitGroup.remove(fruit);
       }
     });
+
+    const pointer = this.input.activePointer;
+
+    if (pointer.isDown) {
+      this.Points.push({ x: pointer.x, y: pointer.y });
+
+      if (this.Points.length > 8) {
+        this.Points.shift();
+      }
+    } else {
+      this.Points = [];
+    }
+
+    this.slash.clear();
+    if (this.Points.length > 0) {
+      this.slash.lineStyle(10, 0xffffff);
+      this.slash.beginPath();
+      this.slash.moveTo(this.Points[0].x, this.Points[0].y);
+
+      for (let i = 1; i < this.Points.length; i++) {
+        this.slash.lineTo(this.Points[i].x, this.Points[i].y);
+      }
+      this.slash.strokePath();
+    }
   }
 }
