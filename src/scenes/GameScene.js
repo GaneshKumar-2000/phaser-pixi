@@ -22,8 +22,8 @@ export default class GameScene extends Phaser.Scene {
     this.gameGroup.add(this.bg);
 
     this.crow = this.add.sprite(100, 100, "crow");
-    this.crow.setOrigin(0.5);
-    this.crow.setScale(0.5);
+    this.crow.setOrigin(0);
+    this.crow.setScale(0.3);
     this.gameGroup.add(this.crow);
 
     this.crowTween = this.tweens.add({
