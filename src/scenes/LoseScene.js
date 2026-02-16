@@ -23,6 +23,10 @@ export default class LoseScene extends Phaser.Scene {
     const uiScale = Math.min(width / designWidth, height / designHeight);
     container.setScale(uiScale);
 
+    this.sound.stopAll();
+    const failMusic = this.sound.add("fail", { loop: false });
+    failMusic.play();
+
     const title = this.add
       .text(0, 0, "GAME OVER", {
         fontSize: "42px",
@@ -45,6 +49,7 @@ export default class LoseScene extends Phaser.Scene {
       .setOrigin(0.5)
       .setInteractive()
       .on("pointerdown", () => {
+        failMusic.stop();
         this.scene.start("game-scene");
       });
 

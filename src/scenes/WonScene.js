@@ -22,6 +22,10 @@ export default class WonScene extends Phaser.Scene {
     const uiScale = Math.min(width / designWidth, height / designHeight);
     container.setScale(uiScale);
 
+    this.sound.stopAll();
+    const winMusic = this.sound.add("win", { loop: false });
+    winMusic.play();
+
     const title = this.add
       .text(0, 0, "YOU WON", {
         fontSize: "42px",
@@ -44,6 +48,7 @@ export default class WonScene extends Phaser.Scene {
       .setOrigin(0.5)
       .setInteractive()
       .on("pointerdown", () => {
+        winMusic.stop();
         this.scene.start("main-menu");
       });
 

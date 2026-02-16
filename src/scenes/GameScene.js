@@ -43,7 +43,7 @@ export default class GameScene extends Phaser.Scene {
     const h = 100;
 
     // Hitbox for collision
-    this.hitbox = this.add.rectangle(0, 0, w, h, 0xffff00, 0);
+    this.hitbox = this.add.rectangle(0, 35, 50, 10, 0xffff00, 0);
     this.player.add(this.hitbox);
 
     // Water
@@ -136,12 +136,23 @@ export default class GameScene extends Phaser.Scene {
     this.updateWaterLevel();
 
     this.gameResized();
+
+    if (!this.sound.get("bg_music")) {
+      const bgMusic = this.sound.add("bg_music", { loop: true, volume: 0.5 });
+      bgMusic.play();
+    } else if (!this.sound.get("bg_music").isPlaying) {
+      this.sound.get("bg_music").play();
+    }
   }
 
   spawnStone() {
     if (this.isGameOver) return;
 
-    const stone = this.stones.create(this.crow.x, this.crow.y + 30, "stone");
+    const stone = this.stones.create(
+      this.crow.x + 20,
+      this.crow.y + 20,
+      "stone",
+    );
 
     stone.setScale(0.2);
 
