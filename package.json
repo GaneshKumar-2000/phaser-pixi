@@ -1,5 +1,5 @@
 {
-  "name": "fruit-game",
+  "name": "catching-game",
   "version": "1.0.0",
   "description": "the user has to avoid hitting the obstracle, use action like jump, roll, left, right to survive.",
   "main": "index.js",
@@ -9,10 +9,9 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
-    "fruit",
+    "catching",
     "game",
-    "arcade",
-    "throwing"
+    "arcade"
   ],
   "author": "ganesh kumar",
   "license": "ISC",

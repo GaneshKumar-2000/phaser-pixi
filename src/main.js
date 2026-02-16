@@ -1,6 +1,8 @@
 import GameScene from "./scenes/GameScene.js";
 import Preloader from "./scenes/PreLoader.js";
 import MainMenu from "./scenes/MainMenu.js";
+import WonScene from "./scenes/WonScene.js";
+import LoseScene from "./scenes/LoseScene.js";
 
 const ratio = window.devicePixelRatio;
 
@@ -21,7 +23,7 @@ const config = {
       debug: false,
     },
   },
-  scene: [Preloader, MainMenu, GameScene],
+  scene: [Preloader, MainMenu, GameScene, WonScene, LoseScene],
 };
 
 const game = new Phaser.Game(config);
@@ -36,20 +38,3 @@ game.screenBaseSize = {
 };
 
 game.orientation = "portrait";
-
-// src/
-// ├── assets/                  # Images, Sounds, Fonts
-// │   ├── images/
-// │   └── audio/
-// ├── scenes/                  # Each "Screen" is a separate file
-// │   ├── Preloader.js         # Loads assets, shows loading bar
-// │   ├── MainMenu.js          # Start button, High scores
-// │   ├── GameScene.js         # The actual gameplay (what main.js is now)
-// │   └── GameOver.js          # Restart button, Final score
-// ├── objects/                 # Game Entities (Classes)
-// │   ├── Player.js            # Handles movement logic
-// │   └── ObstacleManager.js   # Spawning logic
-// ├── utils/                   # Helper functions
-// │   └── Constants.js         # Global numbers (Screen size, Speeds)
-// ├── main.js                  # Entry point (bootstraps the game)
-// └── index.html               # HTML container

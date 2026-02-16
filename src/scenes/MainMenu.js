@@ -14,10 +14,16 @@ export default class MainMenu extends Phaser.Scene {
     this.bg.setOrigin(0.5);
     this.gameGroup.add(this.bg);
 
-    this.title = this.add.image(0, -200, "title");
-    this.title.setOrigin(0.5);
-    this.title.setDisplaySize(600, 600);
-    this.gameGroup.add(this.title);
+    this.titleText = this.add.text(0, -200, "CROW & JAR", {
+      fontSize: "80px",
+      fontFamily: "Arial",
+      color: "#ffffff",
+      stroke: "#000000",
+      strokeThickness: 8,
+      fontStyle: "bold",
+    });
+    this.titleText.setOrigin(0.5);
+    this.gameGroup.add(this.titleText);
 
     this.playbtn = this.add.image(dimensions.gameWidth / 2, 200, "play");
     this.playbtn.setOrigin(0.5);
@@ -39,31 +45,27 @@ export default class MainMenu extends Phaser.Scene {
 
     this.gameResized();
 
-    const titleTargetY = this.title.y;
-    const playbtnTargetY = this.playbtn.y;
+    const titleTargetY = dimensions.gameHeight / 2 - 150;
+    const playbtnTargetY = dimensions.gameHeight / 2 + 150;
 
-    this.title.y += 200;
-    this.playbtn.y += 200;
-
-    this.title.alpha = 0;
+    this.titleText.y = -100;
+    this.playbtn.y = dimensions.gameHeight + 200;
+    this.titleText.alpha = 0;
     this.playbtn.alpha = 0;
-
     this.tweens.add({
-      targets: this.title,
+      targets: this.titleText,
       y: titleTargetY,
       alpha: 1,
-      duration: 2000,
-      repeat: 0,
-      ease: "easeOut",
+      duration: 1500,
+      ease: "Bounce.easeOut",
     });
-
     this.tweens.add({
       targets: this.playbtn,
       y: playbtnTargetY,
       alpha: 1,
-      duration: 2000,
-      repeat: 0,
-      ease: "easeOut",
+      duration: 1500,
+      delay: 500,
+      ease: "Power2",
     });
 
     if (!this.sound.get("bg_music")) {
@@ -159,22 +161,20 @@ export default class MainMenu extends Phaser.Scene {
     this.gameGroup.y =
       (this.game.canvas.height / this.gameScale - dimensions.gameHeight) / 2;
 
-    this.bg.x = dimensions.gameWidth / 2;
-    this.bg.y = dimensions.gameHeight / 2;
+    this.bg.setPosition(dimensions.gameWidth / 2, dimensions.gameHeight / 2);
 
-    this.bg.setScale(1);
+    let scaleX = dimensions.actualWidth / this.bg.width;
+    let scaleY = dimensions.actualHeight / this.bg.height;
+    this.bg.setScale(Math.max(scaleX, scaleY) / this.gameScale);
 
-    let scaleX = dimensions.actualWidth / this.bg.displayWidth;
-    let scaleY = dimensions.actualHeight / this.bg.displayHeight;
-
-    let scale = Math.max(scaleX, scaleY);
-
-    this.bg.setScale(scale);
-
-    this.title.x = dimensions.gameWidth / 2;
-    this.title.y = dimensions.gameHeight / 2 - 150;
-
+    this.titleText.x = dimensions.gameWidth / 2;
     this.playbtn.x = dimensions.gameWidth / 2;
-    this.playbtn.y = dimensions.gameHeight / 2 + 150;
+
+    if (!this.tweens.isTweening(this.titleText)) {
+      this.titleText.y = dimensions.gameHeight / 2 - 150;
+    }
+    if (!this.tweens.isTweening(this.playbtn)) {
+      this.playbtn.y = dimensions.gameHeight / 2 + 150;
+    }
   }
 }
